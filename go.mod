@@ -1,4 +1,4 @@
-module github.com/networkguild/netconf
+module github.com/Mrflatt/netconf
 
 go 1.26.0
 
