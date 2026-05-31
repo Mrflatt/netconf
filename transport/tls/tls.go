@@ -6,8 +6,8 @@ import (
 	"io"
 	"net"
 
-	"github.com/networkguild/netconf/internal"
-	"github.com/networkguild/netconf/transport"
+	"github.com/Mrflatt/netconf/internal"
+	"github.com/Mrflatt/netconf/transport"
 )
 
 type framer = internal.Framer

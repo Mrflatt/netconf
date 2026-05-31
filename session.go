@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/networkguild/netconf/transport"
+	"github.com/Mrflatt/netconf/transport"
 	"github.com/puzpuzpuz/xsync/v4"
 	"golang.org/x/text/encoding/ianaindex"
 )

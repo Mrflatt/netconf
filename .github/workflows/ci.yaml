@@ -31,7 +31,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    if: ${{ github.actor != 'networkguild-bot[bot]' || !contains(github.event.pull_request.title, 'release') }}
+    if: ${{ github.actor != 'github-actions[bot]' || !contains(github.event.pull_request.title, 'release') }}
     timeout-minutes: 5
     steps:
       - name: Checkout
@@ -49,7 +49,7 @@ jobs:
 
       - name: Run tests
         run: |
-          go test -race -covermode=atomic -coverprofile=coverage.out ./...
+          go test -race -timeout 60s -covermode=atomic -coverprofile=coverage.out ./...
 
       - name: Upload coverage
         uses: codecov/codecov-action@v6
@@ -67,14 +67,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/create-github-app-token@v3
-        id: app-token
-        with:
-          app-id: ${{ vars.BOT_ID }}
-          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
       - uses: googleapis/release-please-action@v5
         with:
-          token: ${{ steps.app-token.outputs.token }}
           skip-github-pull-request: true
 
   release-pr:
@@ -86,14 +80,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/create-github-app-token@v3
-        id: app-token
-        with:
-          app-id: ${{ vars.BOT_ID }}
-          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
       - uses: googleapis/release-please-action@v5
         with:
-          token: ${{ steps.app-token.outputs.token }}
           skip-github-release: true
 
   automerge:
@@ -105,15 +93,9 @@ jobs:
       pull-requests: write
       contents: write
     steps:
-      - uses: actions/create-github-app-token@v3
-        id: app-token
-        with:
-          app-id: ${{ vars.BOT_ID }}
-          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
-
       - name: Automerge dependabot PR
         uses: fastify/github-action-merge-dependabot@v3
         with:
           target: minor
-          github-token: ${{ steps.app-token.outputs.token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           use-github-auto-merge: true
