@@ -334,14 +334,14 @@ type LockRequest struct {
 
 func NewLockRequest(target Datastore) *LockRequest {
 	return &LockRequest{
-		XMLName: xml.Name{Space: "urn:ietf:params:xml:ns:netconf:base:1.0", Local: "lock"},
+		XMLName: xml.Name{Space: baseNetconfNs, Local: "lock"},
 		Target:  target,
 	}
 }
 
 func NewUnlockRequest(target Datastore) *LockRequest {
 	return &LockRequest{
-		XMLName: xml.Name{Space: "urn:ietf:params:xml:ns:netconf:base:1.0", Local: "unlock"},
+		XMLName: xml.Name{Space: baseNetconfNs, Local: "unlock"},
 		Target:  target,
 	}
 }

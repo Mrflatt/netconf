@@ -64,7 +64,7 @@ func NewFramer(r io.Reader, w io.Writer) *Framer {
 // `io.Writers` for sent or recv data.  Either sent of recv can be nil to not
 // capture any data.
 // Useful for displaying to a screen or capturing to a file for debugging.
-func (f *Framer) DebugCapture(in io.Writer, out io.Writer) {
+func (f *Framer) DebugCapture(in, out io.Writer) {
 	if f.curReader != nil ||
 		f.curWriter != nil ||
 		f.bw.Buffered() > 0 ||
