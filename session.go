@@ -215,7 +215,7 @@ func (s *Session) handshake(ctx context.Context) error {
 	clientMsg := Hello{
 		XMLName: xml.Name{
 			Local: "hello",
-			Space: "urn:ietf:params:xml:ns:netconf:base:1.0",
+			Space: baseNetconfNs,
 		},
 		Capabilities: s.clientCaps.All(),
 	}
@@ -400,7 +400,7 @@ func (s *Session) req(msgID uint64) (bool, chan RPCReply) {
 	return true, req
 }
 
-func (s *Session) call(ctx context.Context, req any, resp any) error {
+func (s *Session) call(ctx context.Context, req, resp any) error {
 	reply, err := s.do(ctx, req)
 	if err != nil {
 		return err
@@ -447,12 +447,13 @@ func (s *Session) send(msg *RPC) (chan RPCReply, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if err := s.writeMsg(msg); err != nil {
-		return nil, err
-	}
-
 	ch := make(chan RPCReply, 1)
 	s.reqs.Store(msg.MessageID, ch)
+
+	if err := s.writeMsg(msg); err != nil {
+		s.reqs.Delete(msg.MessageID)
+		return nil, err
+	}
 
 	return ch, nil
 }

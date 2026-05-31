@@ -23,7 +23,7 @@ type Transport struct {
 
 type Opt func(*Transport)
 
-func WithDebugCapture(in io.Writer, out io.Writer) Opt {
+func WithDebugCapture(in, out io.Writer) Opt {
 	return func(t *Transport) {
 		t.DebugCapture(in, out)
 	}

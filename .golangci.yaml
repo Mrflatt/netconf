@@ -34,9 +34,11 @@ linters:
     errchkjson:
       check-error-free-encoding: false
       report-no-exported: true
+    goconst:
+      ignore-tests: true
     godot:
       exclude:
-        - '@Router'
+        - "@Router"
     gosec:
       excludes:
         - G115
@@ -69,6 +71,7 @@ formatters:
   enable:
     - gofumpt
     - goimports
+    - gci
   exclusions:
     generated: lax
     paths:
@@ -76,3 +79,6 @@ formatters:
       - builtin$
       - examples$
       - generated$
+  settings:
+    gofumpt:
+      extra-rules: true
