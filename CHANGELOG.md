@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.4.4](https://github.com/Mrflatt/netconf/compare/v1.4.3...v1.4.4) (2026-06-17)
+
+
+### Bug Fixes
+
+* register reply channel before writing message ([a4453ba](https://github.com/Mrflatt/netconf/commit/a4453ba5de48557f68c959f30d0a09753b982b44))
+
+
+### Miscellaneous Chores
+
+* add MIT license to the project ([7953940](https://github.com/Mrflatt/netconf/commit/7953940ec07e75538b97261443e80837c4220712))
+* bump golang.org/x/crypto in the minor-dependencies group ([#74](https://github.com/Mrflatt/netconf/issues/74)) ([d7d3184](https://github.com/Mrflatt/netconf/commit/d7d3184ad03a5b745e3bc27a3c6bd100a47a6692))
+* bump the actions group across 1 directory with 2 updates ([#77](https://github.com/Mrflatt/netconf/issues/77)) ([8459f25](https://github.com/Mrflatt/netconf/commit/8459f25e9be69a58cd9e22ef5c80ab2a55601d3f))
+* bump the actions group across 1 directory with 4 updates ([#71](https://github.com/Mrflatt/netconf/issues/71)) ([e1e8c6c](https://github.com/Mrflatt/netconf/commit/e1e8c6cdd0ba448212d10bc0c4aab6ea5cd1f6ff))
+* bump the minor-dependencies group with 2 updates ([#69](https://github.com/Mrflatt/netconf/issues/69)) ([4a2689f](https://github.com/Mrflatt/netconf/commit/4a2689f601d85980455883133ada085f54e8cbf8))
+* bump the minor-dependencies group with 2 updates ([#78](https://github.com/Mrflatt/netconf/issues/78)) ([2c069d0](https://github.com/Mrflatt/netconf/commit/2c069d0097ab139224600a61b129e47c86b5adfc))
+* bump WillAbides/setup-go-faster in the actions group ([#73](https://github.com/Mrflatt/netconf/issues/73)) ([d5ed810](https://github.com/Mrflatt/netconf/commit/d5ed810f105f54724dd9591853693d9a118f9f1d))
+* migrate module from networkguild to Mrflatt ([29f7863](https://github.com/Mrflatt/netconf/commit/29f78636a8e8bc6d6ea515218bfacd31dec6f91c))
+
 ## [1.4.3](https://github.com/networkguild/netconf/compare/v1.4.2...v1.4.3) (2026-04-29)
 
 
