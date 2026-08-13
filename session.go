@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -33,6 +34,67 @@ func charsetReader(label string, input io.Reader) (io.Reader, error) {
 		return input, nil
 	}
 	return enc.NewDecoder().Reader(input), nil
+}
+
+func isIllegalXMLByte(b []byte, i int) int {
+	c := b[i]
+	switch {
+	case c < 0x20 && c != '\t' && c != '\n' && c != '\r':
+		return 1
+	case c == 0xEF && i+2 < len(b) && b[i+1] == 0xBF && (b[i+2] == 0xBE || b[i+2] == 0xBF):
+		return 3
+	default:
+		return 0
+	}
+}
+
+func sanitizeXML(b []byte) []byte {
+	for i := 0; i < len(b); {
+		n := isIllegalXMLByte(b, i)
+		if n == 0 {
+			i++
+			continue
+		}
+		out := make([]byte, i, len(b)-n)
+		copy(out, b[:i])
+		for i += n; i < len(b); {
+			n = isIllegalXMLByte(b, i)
+			if n == 0 {
+				out = append(out, b[i])
+				i++
+				continue
+			}
+			i += n
+		}
+		return out
+	}
+	return b
+}
+
+func messageIDFromRaw(raw []byte) uint64 {
+	const prefix = "message-id="
+	i := bytes.Index(raw, []byte(prefix))
+	if i < 0 {
+		return 0
+	}
+	i += len(prefix)
+	if i >= len(raw) {
+		return 0
+	}
+	quote := raw[i]
+	if quote != '"' && quote != '\'' {
+		return 0
+	}
+	i++
+	end := bytes.IndexByte(raw[i:], quote)
+	if end < 0 {
+		return 0
+	}
+	id, err := strconv.ParseUint(string(raw[i:i+end]), 10, 64)
+	if err != nil {
+		return 0
+	}
+	return id
 }
 
 // ISession is definition of the operations that this netconf client provides.
@@ -295,6 +357,7 @@ func (s *Session) recvMsg() error {
 	if err != nil {
 		return err
 	}
+	raw = sanitizeXML(raw)
 
 	var elem *xml.StartElement
 	dec := xml.NewDecoder(bytes.NewReader(raw))
@@ -315,7 +378,10 @@ func (s *Session) recvMsg() error {
 	case "rpc-reply":
 		rpcReply := RPCReply{rpc: raw}
 		if err := dec.DecodeElement(&rpcReply, elem); err != nil {
-			return fmt.Errorf("failed to decode rpc-reply message: %w", err)
+			s.logger.Errorf("failed to decode rpc-reply message: %v", err)
+			if rpcReply.MessageID == 0 {
+				rpcReply.MessageID = messageIDFromRaw(raw)
+			}
 		}
 
 		ok, req := s.req(rpcReply.MessageID)

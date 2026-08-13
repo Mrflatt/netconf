@@ -92,6 +92,44 @@ func (s *testTransport) Close() error {
 	return nil
 }
 
+func TestSanitizeXML(t *testing.T) {
+	tt := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{name: "clean", in: "<a>ok</a>", want: "<a>ok</a>"},
+		{name: "stx", in: "<a>aa-\nbb-cc\x02</a>", want: "<a>aa-\nbb-cc</a>"},
+		{name: "nul", in: "<a>\x00x</a>", want: "<a>x</a>"},
+		{name: "tab newline cr kept", in: "<a>\t\n\r</a>", want: "<a>\t\n\r</a>"},
+		{name: "utf8 nonchar", in: "<a>\xEF\xBF\xBE</a>", want: "<a></a>"},
+		{name: "empty", in: "", want: ""},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, []byte(tc.want), sanitizeXML([]byte(tc.in)))
+		})
+	}
+}
+
+func TestMessageIDFromRaw(t *testing.T) {
+	tt := []struct {
+		name string
+		in   string
+		want uint64
+	}{
+		{name: "double quote", in: `<rpc-reply message-id="42">`, want: 42},
+		{name: "single quote", in: `<rpc-reply message-id='7'>`, want: 7},
+		{name: "missing", in: `<rpc-reply>`, want: 0},
+		{name: "unquoted", in: `<rpc-reply message-id=3>`, want: 0},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.want, messageIDFromRaw([]byte(tc.in)))
+		})
+	}
+}
+
 func TestNonUTF8HelloMessage(t *testing.T) {
 	ts := newTestServer(t)
 	sess, err := newSession(WithTransport(ts.transport()))
