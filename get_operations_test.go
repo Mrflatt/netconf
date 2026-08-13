@@ -1,8 +1,10 @@
 package netconf
 
 import (
+	"context"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -137,4 +139,49 @@ func TestGet(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetWithIllegalControlCharacter(t *testing.T) {
+	ts := newTestServer(t)
+	sess, err := newSession(WithTransport(ts.transport()))
+	require.NoError(t, err)
+	sess.serverCaps = newCapabilitySet(DefaultCapabilities...)
+	go sess.recv()
+
+	replyXML := "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"1\">" +
+		"<data><If-list><id>eth1/47</id><adj-items><AdjEp-list>" +
+		"<id>1</id><capability>bridge,router</capability>" +
+		"<chassisIdT>7</chassisIdT><chassisIdV>aa-\nbb-cc\x02</chassisIdV>" +
+		"</AdjEp-list></adj-items></If-list></data></rpc-reply>"
+	ts.queueResp([]byte(replyXML))
+
+	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
+	defer cancel()
+
+	reply, err := sess.Get(ctx, WithSubtreeFilter(`<state/>`))
+	require.NoError(t, err)
+	require.NotNil(t, reply)
+	require.Equal(t, uint64(1), reply.MessageID)
+	require.Contains(t, string(reply.Raw()), "<chassisIdV>aa-\nbb-cc</chassisIdV>")
+	require.NotContains(t, string(reply.Raw()), "\x02")
+}
+
+func TestGetDeliversReplyWhenDecodeFails(t *testing.T) {
+	ts := newTestServer(t)
+	sess, err := newSession(WithTransport(ts.transport()))
+	require.NoError(t, err)
+	sess.serverCaps = newCapabilitySet(DefaultCapabilities...)
+	go sess.recv()
+
+	// Unescaped ]]> is illegal XML 1.0 and is not stripped by sanitizeXML.
+	ts.queueRespString(`<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="1"><data>foo]]>bar</data></rpc-reply>`)
+
+	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
+	defer cancel()
+
+	reply, err := sess.Get(ctx, WithSubtreeFilter(`<state/>`))
+	require.NoError(t, err)
+	require.NotNil(t, reply)
+	require.Equal(t, uint64(1), reply.MessageID)
+	require.Contains(t, string(reply.Raw()), "foo]]>bar")
 }
