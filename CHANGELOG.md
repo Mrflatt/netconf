@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.5](https://github.com/Mrflatt/netconf/compare/v1.4.4...v1.4.5) (2026-08-13)
+
+
+### Bug Fixes
+
+* stop Get hanging on vendor XML with illegal control chars ([#82](https://github.com/Mrflatt/netconf/issues/82)) ([0dbdb83](https://github.com/Mrflatt/netconf/commit/0dbdb83329b6023d8fdb667e78389f08bdd44202))
+
+
+### Miscellaneous Chores
+
+* bump actions/checkout from 6 to 7 in the actions group ([#79](https://github.com/Mrflatt/netconf/issues/79)) ([f0ae792](https://github.com/Mrflatt/netconf/commit/f0ae792598c95b1576eed866947bab234f167f4c))
+* bump the minor-dependencies group across 1 directory with 2 updates ([#81](https://github.com/Mrflatt/netconf/issues/81)) ([9301d81](https://github.com/Mrflatt/netconf/commit/9301d81578ceccd2d43cff1f6e6fb5c65c7bbe5a))
+
 ## [1.4.4](https://github.com/Mrflatt/netconf/compare/v1.4.3...v1.4.4) (2026-06-17)
 
 
