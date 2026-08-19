@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.6](https://github.com/Mrflatt/netconf/compare/v1.4.5...v1.4.6) (2026-08-19)
+
+
+### Miscellaneous Chores
+
+* bump the minor-dependencies group with 3 updates ([#84](https://github.com/Mrflatt/netconf/issues/84)) ([d419c93](https://github.com/Mrflatt/netconf/commit/d419c93f176db093cba121e0fd942f3f9c2266c9))
+
 ## [1.4.5](https://github.com/Mrflatt/netconf/compare/v1.4.4...v1.4.5) (2026-08-13)
 
 
