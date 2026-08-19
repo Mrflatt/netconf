@@ -13,6 +13,7 @@ import (
 	"sync/atomic"
 	"syscall"
 	"time"
+	"unicode/utf8"
 
 	"github.com/Mrflatt/netconf/transport"
 	"github.com/puzpuzpuz/xsync/v4"
@@ -36,39 +37,76 @@ func charsetReader(label string, input io.Reader) (io.Reader, error) {
 	return enc.NewDecoder().Reader(input), nil
 }
 
-func isIllegalXMLByte(b []byte, i int) int {
-	c := b[i]
+// nonASCIIByteAction reports how sanitizeXML should treat the non-ASCII
+// byte sequence starting at b[i]. size is always the number of input
+// bytes consumed. drop means those bytes must be removed outright (XML
+// 1.0 noncharacters). replace means they form an invalid UTF-8 sequence
+// and must be substituted with the UTF-8 encoding of U+FFFD, so the
+// corruption stays visible in the decoded text instead of silently
+// gluing neighbouring bytes into a clean-looking value.
+//
+// This only handles the non-ASCII case so the hot, all-ASCII byte path
+// in sanitizeXML stays simple enough for the compiler to inline; ASCII
+// bytes vastly outnumber multi-byte UTF-8 sequences in NETCONF replies.
+func nonASCIIByteAction(b []byte, i int) (size int, drop, replace bool) {
+	r, size := utf8.DecodeRune(b[i:])
 	switch {
-	case c < 0x20 && c != '\t' && c != '\n' && c != '\r':
-		return 1
-	case c == 0xEF && i+2 < len(b) && b[i+1] == 0xBF && (b[i+2] == 0xBE || b[i+2] == 0xBF):
-		return 3
+	case r == utf8.RuneError && size <= 1:
+		return 1, false, true
+	case r == 0xFFFE || r == 0xFFFF:
+		return size, true, false
 	default:
-		return 0
+		return size, false, false
 	}
 }
 
 func sanitizeXML(b []byte) []byte {
+	needsFix := false
 	for i := 0; i < len(b); {
-		n := isIllegalXMLByte(b, i)
-		if n == 0 {
+		c := b[i]
+		if c < utf8.RuneSelf {
+			if c < 0x20 && c != '\t' && c != '\n' && c != '\r' {
+				needsFix = true
+				break
+			}
 			i++
 			continue
 		}
-		out := make([]byte, i, len(b)-n)
-		copy(out, b[:i])
-		for i += n; i < len(b); {
-			n = isIllegalXMLByte(b, i)
-			if n == 0 {
-				out = append(out, b[i])
+		size, drop, replace := nonASCIIByteAction(b, i)
+		if drop || replace {
+			needsFix = true
+			break
+		}
+		i += size
+	}
+	if !needsFix {
+		return b
+	}
+
+	out := make([]byte, 0, len(b))
+	for i := 0; i < len(b); {
+		c := b[i]
+		if c < utf8.RuneSelf {
+			if c < 0x20 && c != '\t' && c != '\n' && c != '\r' {
 				i++
 				continue
 			}
-			i += n
+			out = append(out, c)
+			i++
+			continue
 		}
-		return out
+		size, drop, replace := nonASCIIByteAction(b, i)
+		switch {
+		case drop:
+			// bytes removed
+		case replace:
+			out = utf8.AppendRune(out, utf8.RuneError)
+		default:
+			out = append(out, b[i:i+size]...)
+		}
+		i += size
 	}
-	return b
+	return out
 }
 
 func messageIDFromRaw(raw []byte) uint64 {
