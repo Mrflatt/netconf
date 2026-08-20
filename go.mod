@@ -6,7 +6,7 @@ toolchain go1.26.2
 
 require (
 	github.com/puzpuzpuz/xsync/v4 v4.5.0
-	github.com/stretchr/testify v1.12.0
+	github.com/stretchr/testify v1.12.1
 	golang.org/x/crypto v0.55.0
 )
 
@@ -28,7 +28,7 @@ require (
 	github.com/ldez/structtags v0.6.1 // indirect
 	github.com/manuelarte/embeddedstructfieldcheck v0.4.0 // indirect
 	go.augendre.info/arangolint v0.4.0 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 )
 
 require (
