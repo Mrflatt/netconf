@@ -2,6 +2,7 @@ package netconf
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"testing"
 	"time"
@@ -184,4 +185,44 @@ func TestGetDeliversReplyWhenDecodeFails(t *testing.T) {
 	require.NotNil(t, reply)
 	require.Equal(t, uint64(1), reply.MessageID)
 	require.Contains(t, string(reply.Raw()), "foo]]>bar")
+}
+
+// errorCollectingLogger records Errorf calls so tests can assert the decode
+// path did not have to fall back to an undecoded raw reply.
+type errorCollectingLogger struct {
+	noOpLogger
+	errors []string
+}
+
+func (l *errorCollectingLogger) Errorf(format string, args ...any) {
+	l.errors = append(l.errors, fmt.Sprintf(format, args...))
+}
+
+func TestGetWithInvalidUTF8Byte(t *testing.T) {
+	ts := newTestServer(t)
+	logger := &errorCollectingLogger{}
+	sess, err := newSession(WithTransport(ts.transport()), WithLogger(logger))
+	require.NoError(t, err)
+	sess.serverCaps = newCapabilitySet(DefaultCapabilities...)
+	go sess.recv()
+
+	// A lone 0xCB byte (invalid UTF-8 continuation byte), as observed in
+	// device-supplied free-text fields such as LLDP port descriptions.
+	replyXML := "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"1\">" +
+		"<data><port-description>uplink - foo\xCBbar</port-description></data></rpc-reply>"
+	ts.queueResp([]byte(replyXML))
+
+	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
+	defer cancel()
+
+	reply, err := sess.Get(ctx, WithSubtreeFilter(`<state/>`))
+	require.NoError(t, err)
+	require.NotNil(t, reply)
+	require.Equal(t, uint64(1), reply.MessageID)
+	require.Contains(t, string(reply.Raw()), "uplink - foo\uFFFDbar")
+	require.NotContains(t, string(reply.Raw()), "\xCB")
+	// The corrupted byte was repaired before decoding, so the full
+	// rpc-reply parsed successfully instead of falling back to a raw,
+	// mostly-undecoded reply.
+	require.Empty(t, logger.errors)
 }

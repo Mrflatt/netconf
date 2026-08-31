@@ -103,6 +103,10 @@ func TestSanitizeXML(t *testing.T) {
 		{name: "nul", in: "<a>\x00x</a>", want: "<a>x</a>"},
 		{name: "tab newline cr kept", in: "<a>\t\n\r</a>", want: "<a>\t\n\r</a>"},
 		{name: "utf8 nonchar", in: "<a>\xEF\xBF\xBE</a>", want: "<a></a>"},
+		{name: "lone continuation byte replaced", in: "<a>foo\xCBbar</a>", want: "<a>foo\uFFFDbar</a>"},
+		{name: "lone lead byte replaced", in: "<a>a\xC0b</a>", want: "<a>a\uFFFDb</a>"},
+		{name: "truncated multi-byte sequence at eof replaced", in: "<a>ab\xE2\x82", want: "<a>ab\uFFFD\uFFFD"},
+		{name: "valid multi-byte utf8 kept", in: "<a>café</a>", want: "<a>café</a>"},
 		{name: "empty", in: "", want: ""},
 	}
 	for _, tc := range tt {
