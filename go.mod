@@ -6,8 +6,8 @@ toolchain go1.26.2
 
 require (
 	github.com/puzpuzpuz/xsync/v4 v4.5.0
-	github.com/stretchr/testify v1.12.0
-	golang.org/x/crypto v0.55.0
+	github.com/stretchr/testify v1.12.1
+	golang.org/x/crypto v0.57.0
 )
 
 require (
@@ -28,7 +28,7 @@ require (
 	github.com/ldez/structtags v0.6.1 // indirect
 	github.com/manuelarte/embeddedstructfieldcheck v0.4.0 // indirect
 	go.augendre.info/arangolint v0.4.0 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 )
 
 require (
@@ -207,11 +207,11 @@ require (
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
 	golang.org/x/exp/typeparams v0.0.0-20260209203927-2842357ff358 // indirect
-	golang.org/x/mod v0.38.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/text v0.41.0
-	golang.org/x/tools v0.48.0 // indirect
+	golang.org/x/mod v0.41.0 // indirect
+	golang.org/x/sync v0.23.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/text v0.42.0
+	golang.org/x/tools v0.49.0 // indirect
 	google.golang.org/protobuf v1.36.8 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
